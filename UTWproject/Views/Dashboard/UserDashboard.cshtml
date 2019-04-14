@@ -1,0 +1,78 @@
+﻿
+@{
+    Layout = "~/Views/Shared/DashboardLayout.cshtml";
+    ViewBag.Title = "UserDashboard";
+
+
+    DBentities db = new DBentities();
+    int currUserID = db.Users.Where(Z => Z.UserName == System.Web.HttpContext.Current.User.Identity.Name).FirstOrDefault().ID;
+    var sums = from x in db.Orders
+               where x.UserID == currUserID
+               group x by x.StockID into s
+               select new
+               {
+                   StockID = s.Key,
+                   Quantity = s.Sum(q => q.Quantity)
+               };
+    //sums : qty,stockID
+    List<KeyValuePair<int, double>> stocks = new List<KeyValuePair<int, double>>();
+    foreach (var item in sums.ToList())
+    {
+        double value = db.Stocks.Where(s => s.ID == item.StockID).FirstOrDefault().Price * item.Quantity;
+        stocks.Add(new KeyValuePair<int, double>(item.StockID, value));
+    }
+    //stocks : qty*price , stockID
+    double totalValue = 0;
+    foreach (var item in stocks)
+    {
+        totalValue += item.Value;
+    }
+    List<KeyValuePair<string, double>> pieItems = new List<KeyValuePair<string, double>>();
+    foreach (var item in stocks)
+    {
+        string name = db.Stocks.Where(s => s.ID == item.Key).FirstOrDefault().EnglishName;
+        pieItems.Add(new KeyValuePair<string, double>(name, item.Value / totalValue));
+    }
+}
+@*@HttpContext.Current.User.Identity.Name*@
+<div>
+    <h1>Hello : @Session["username"]</h1>
+</div>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+
+<a href="/OrderTransaction/Transaction" class="btn btn-danger">Order Transaction</a>
+<a href="/MonitorTransactions/Index" class="btn btn-danger">Monitor Transaction</a>
+<br /><br />
+
+
+@section scripts {
+    <script type="text/javascript">
+
+        window.onload = function () {
+
+            var chart = new CanvasJS.Chart("chartContainer", {
+                animationEnabled: true,
+                title: {
+                    text: "User Stocks"
+                },
+                data: [{
+                    type: "pie",
+                    startAngle: 240,
+                    yValueFormatString: "##0.00\"%\"",
+                    indexLabel: "{label} {y}",
+                    dataPoints: [
+                        @{
+                            foreach (var item in pieItems)
+                            {
+                               @Html.Raw(" { y: "+item.Value+", label: \" "+item.Key+" \" },")
+                            }
+                        }
+
+                    ]
+                }]
+            });
+            chart.render();
+
+        }
+    </script>
+}

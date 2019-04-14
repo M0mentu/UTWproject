@@ -1,0 +1,66 @@
+﻿@model UTWproject.Order
+
+@{
+    ViewBag.Title = "editOrder";
+    Layout = "~/Views/Shared/DashboardLayout.cshtml";
+    DBentities db = new DBentities();
+    var getStocks = db.Stocks.ToList();
+    SelectList listStock = new SelectList(getStocks, "ID", "EnglishName");
+    ViewBag.snames = listStock;
+}
+
+<h2>editOrder</h2>
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(a => a.ID)
+    <div class="form-horizontal">
+        <h4>Order</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="radio-inline">
+                    @Html.RadioButtonFor(r => r.Type, true, "Buy") Buy
+                </div>
+                <div class="radio-inline">
+                    @Html.RadioButtonFor(rr => rr.Type, false, "Sell") Sell
+                </div>
+                @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.StockID, "StockID", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownListFor(c => c.StockID, ViewBag.snames as SelectList, "Select stock", new { @class = "form-control", id = "stockp" })
+                @Html.ValidationMessageFor(model => model.StockID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Quantity, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+
+
+
+
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>

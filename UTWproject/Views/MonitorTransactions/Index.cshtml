@@ -1,0 +1,193 @@
+﻿@model List<Order>
+@{
+    Layout = "~/Views/Shared/DashboardLayout.cshtml";
+    ViewBag.Title = "Index";
+    var date = DateTime.Now;
+    var datee = date.ToString("yyyy-MM-dd");
+    ViewBag.datee = datee;
+    DBentities DB = new DBentities();
+    var Users = DB.Users.ToList();
+    var stocks = DB.Stocks.ToList();
+}
+
+@using (Html.BeginForm())
+{
+
+    <br /><br />
+    <div class="form-group clearfix">
+
+        <label class="control-label col-md-1">From Date</label>
+        <div class="col-md-4">
+            <input type="date"  name="fromDate" id="fromDate" class="form-control"  />
+
+        </div>
+    </div>
+    <div class="form-group clearfix">
+
+        <label class="control-label col-md-1">To Date</label>
+        <div class="col-md-4">
+            <input type="date" name="toDate" id="toDate" class="form-control" />
+
+        </div>
+    </div>
+
+    <div class="form-group clearfix">
+
+        <label class="control-label col-md-1">Stocks</label>
+        <div class="col-md-4">
+            @*<input type="text" name="stockID" id="stockID" class="form-control" />*@
+            @Html.DropDownList("stockID", new SelectList(stocks, "ID", "EnglishName"), "select any name", htmlAttributes: new { @class = "form-control", id = "stockID" })
+
+
+        </div>
+    </div>
+    //User is admin
+    if (TempData["admin"] != null)
+    {
+        <div class="form-group ">
+
+            <label class="control-label col-md-1">Users </label>
+            <div class="col-md-4">
+                @*<input type="text" name="UserID" id="UserID" class="form-control" />*@
+                @Html.DropDownList("UserID", new SelectList(Users, "ID", "UserName"), "select any name", htmlAttributes: new { @class = "form-control", id = "UserID" })
+            </div>
+        </div>
+    }
+
+    <div class="form-group clearfix ">
+        <div class="col-md-4" style="padding-left:35%">
+            <input type="submit" value="Filter" class="btn btn-danger" />
+        </div>
+       
+    </div>
+    <input type="text" name="username" id="username" hidden value=@HttpContext.Current.User.Identity.Name />
+}
+@if (TempData["khaled"] != null)
+{
+    @TempData["khaled"]
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">All Orders</div>
+    <div class="panel-body">
+        <table class="table  table-bordered table-hover">
+            <tr>
+                <th>Cutomer</th>
+                <th>Stock</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Value</th>
+                @*<th>Date</th>
+                    <th>Type</th>*@
+                <th>Description</th>
+            </tr>
+
+
+
+            @foreach (var item in Model)
+            {
+
+                var totalPrice = item.Stock.Price;
+                totalPrice *= item.Quantity;
+                string orderType;
+                if (@item.Type == true)
+                {
+                    orderType = "Buy";
+                }
+                else
+                {
+                    orderType = "Sell";
+                }
+                <tr>
+                    @{
+                        if (TempData["admin"] != null)
+                        {
+                            <td>@item.User.UserName</td>
+                        }
+                    }
+                    <td>@item.Stock.EnglishName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Stock.Price</td>
+                    <td>@totalPrice</td>
+
+                    @*<td>@item.Date</td>*@
+                    @* <td>@orderType</td>*@
+                    <td>
+
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModalCenter" onclick="getDetails('@item.User.EnglishName','@item.Stock.EnglishName',@item.Quantity,'@item.Date','@orderType',@item.ID,@totalPrice)">
+                            Order Details
+                        </button>
+
+
+                    </td>
+                </tr>
+                        }
+        </table>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-centered" role="document" style="left:0">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Inovice</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="border:solid;border-width:1px;margin:5%">
+
+
+                <div style="background-color:#0d0d0d;">
+                    <img src="~/Content/Images/ECorp.png" alt="E-Corp" style="width:100px;height:100px;">
+                    <p style="float:right;color:white">
+                        E-Corp company© <br />
+                        ✉ ECORP@@corp.org<br />
+                        ☎ 000-555-0000<br />
+                        ✎Inovice
+                    </p>
+
+                </div>
+
+
+                <div style="background-color:#1e1e1e">
+                    <h3 id="Oid" style="font-family:'Agency FB', Times, serif;color:#ffffff"></h3>
+                </div>
+                <div>
+                    <h4 id="Uid" style="font-family:'Agency FB', Times, serif;"></h4>
+                    <h4 id="Sid" style="font-family:'Agency FB', Times, serif;"></h4>
+                    <h4 id="Quantity" style="font-family:'Agency FB', Times, serif;"></h4>
+                    <h4 id="type" style="font-family:'Agency FB', Times, serif;"></h4>
+                    <h4 id="Date" style="font-family:'Agency FB', Times, serif;"></h4>
+
+                </div>
+                <div style="background-color:#0d0d0d;text-align:center;color:white">
+                    E-CORP©
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                @*<button type="button" class="btn btn-primary">Save changes</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        function getDetails(UserName, StockName, Quantity, Date, Type, ordernumber, total) {
+            document.getElementById('Oid').textContent = "Order #" + ordernumber;
+            document.getElementById('Uid').innerHTML = "Name: " + UserName;
+            document.getElementById('Sid').innerHTML = "Stock: " + StockName;
+            document.getElementById('Quantity').innerHTML = "Quantity: " + Quantity;
+            document.getElementById('Date').innerHTML = "Date:" + Date;
+            document.getElementById('type').innerHTML = "Transaction:" + Type;
+        }
+        var datetoday = '@ViewBag.datee';
+        $("#fromDate").val(datetoday);
+        var datetoday = '@ViewBag.datee';
+        $("#toDate").val(datetoday);
+    </script>
+}

@@ -1,0 +1,96 @@
+﻿@model UTWproject.Order
+
+@{
+    ViewBag.Title = "makeOrder";
+    Layout = "~/Views/Shared/DashboardLayout.cshtml";
+    DBentities db = new DBentities();
+    var getStocks = db.Stocks.ToList();
+    SelectList listStock = new SelectList(getStocks, "ID", "EnglishName");
+    ViewBag.snames = listStock;
+}
+
+<h2>makeOrder</h2>
+
+@using (Html.BeginForm()) 
+{
+    @Html.AntiForgeryToken()
+    
+    <div class="form-horizontal">
+        <h4>Order</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Type, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                <div class="radio-inline">
+                    @Html.RadioButtonFor(r => r.Type, true, "Buy") Buy
+                </div>
+                <div class="radio-inline">
+                    @Html.RadioButtonFor(rr => rr.Type, false, "Sell") Sell
+                </div>
+                @Html.ValidationMessageFor(model => model.Type, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.StockID, "StockID", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+               
+                <select class="form-control" data-val="true" data-val-number="The field StockID must be a number." data-val-required="The StockID field is required." id="stockp" name="StockID">
+                    @foreach (var item in getStocks)
+                    {
+                        <option value="@item.ID" price="@item.Price">@item.EnglishName</option>
+                    }
+                </select>
+                @Html.ValidationMessageFor(model => model.StockID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Quantity, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Quantity, new { htmlAttributes = new { @class = "form-control" ,id = "amount" } })
+                @Html.ValidationMessageFor(model => model.Quantity, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+
+
+      
+
+     
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    <span>Price: </span><span id="price"></span>
+</div>
+<div>
+    <span>Total: </span><span id="total"></span>
+</div>
+<div>
+    @Html.ActionLink("Back to List", "Transaction")
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+
+        $(document).ready(function(){
+            $("#price").text($("#stockp option:selected").attr("price"));
+            $("#total").text((($("#stockp option:selected").attr("price")) * ($("#amount").val())).toFixed(2));
+            $("#selectStock").change(function () {
+                $("#price").text($("#stockp option:selected").attr("price"));
+                $("#total").text((($("#stockp option:selected").attr("price")) * ($("#amount").val())).toFixed(2));
+            });
+            $("#amount").change(function () {
+                $("#total").text((($("#stockp option:selected").attr("price")) * ($("#amount").val())).toFixed(2));
+            });
+        });
+
+    </script>
+}

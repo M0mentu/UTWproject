@@ -1,0 +1,296 @@
+﻿@model UTWproject.Models.OrderTransactionModel
+@{
+    Layout = "~/Views/Shared/DashboardLayout.cshtml";
+    ViewBag.Title = "Index";
+    DBentities db = new DBentities();
+    var getStocks = db.Stocks.ToList();
+    SelectList listStock = new SelectList(getStocks, "ID", "EnglishName");
+    ViewBag.snames = listStock;
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container" style="margin-top:3%">
+    <div class="form-group ">
+        <div class="col-md-7">
+            <a href="#" class="btn btn-info" onclick="AddNewOrder(0)">Add New Order</a>
+        </div>
+    </div>
+    <div class="form-group ">
+
+        <div class="col-md-3">
+            <input type="text" name="OrdID" id="OrdID" class="form-control" />
+
+        </div>
+
+    </div>
+    <a href="#" class="btn btn-danger" id="ser">Search</a>
+    <br /><br />
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Stock Name</th>
+                <th>Stock Price</th>
+                <th>Order Type</th>
+                <th>Order Quantity</th>
+                <th>Order Date</th>
+                <th>Edit Order</th>
+            </tr>
+        </thead>
+        <tbody id="SetOrderList">
+            <tr id="LoadingStatus" style="color:red"></tr>
+
+        </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @*Popup Form with Search*@
+
+    <div class="modal fade" id="SearchModal">
+        <div class="modal-dialog"style="left:0">
+            <div class="modal-content">
+                <div class="modal-header">
+                    @*<a href="#" class="close" data-dissmiss="modal">&times;</a>*@
+                    <h4>Order Details</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    
+                </div>
+                <div class="modal-body">
+                    <label class="col-md-4">Stock Name: </label><label id="stkName"></label><br /><br />
+                    <label class="col-md-4">Stock Price: </label><label id="stkPrice"></label><br /><br />
+                    <label class="col-md-4">Order Type: </label><label id="OType"></label><br /><br />
+                    <label class="col-md-4">Order Quantity: </label><label id="OQuantity"></label><br /><br />
+                    <label class="col-md-4">Order Date: </label><label id="ODate"></label><br /><br />
+
+                </div>
+            </div>
+        </div>
+    </div>
+    @*Popup Form with Add or Edit Order*@
+
+    <div class="modal fade" id="OurModal" >
+        <div class="modal-dialog" style="left:0">
+            <div class="modal-content">
+                <div class="modal-header">
+                    @*<a href="#" class="close" data-dissmiss="modal">&times;</a>*@
+                    <h4 id="ModalTitle" class="clearfix" style="float:none; direction:ltr"></h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    
+                </div>
+                <div class="modal-body">
+                    <form id="form">
+                        <fieldset id="SubmitForm">
+
+                            @Html.HiddenFor(m => m.ID, new { @id = "ID" })
+                            <div class="form-group">
+                                @Html.Label("Order Type")
+                                <select id="Type" name="Type" class="form-control">
+                                    <option id="op1" value=true>Buy</option>
+                                    <option id="op2" value=fale>Sell</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Stock Name")
+
+                                @Html.DropDownListFor(c => c.StockID, ViewBag.snames as SelectList, new { @id = "StockName", @class = "form-control" })
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Quantity")
+                                @Html.TextBoxFor(m => m.Quantity, new { @id = "Quantity", @class = "form-control" })
+                            </div>
+                            <label id="checkNumbers" style="color:red"></label>
+                            <div class="form-group">
+                                <a href="#" class="btn btn-block btn-danger" id="SaveOrderRecord">Save</a>
+                            </div>
+
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@*@section scripts{*@
+<script>
+    function convertJsonDateToDate(JsonDate) {
+        var MyDate_String_Value = JsonDate;
+        var value = new Date
+                    (
+                         parseInt(MyDate_String_Value.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+        var month = value.getMonth() +1;
+        var dat3 = value.getDate() +
+                               "/" +
+                             month +
+                               "/" +
+               value.getFullYear();
+
+        return dat3;
+    }
+    $("LoadingStatus").html("Loading....");
+    $.get("/Order_Transaction/GetOrderList", null, DataBind);
+    function DataBind(OrderList) {
+        var SetData = $("#SetOrderList");
+        for (var i = 0; i < OrderList.length; i++) {
+            //var date = new Date(parseInt(OrderList[i].Date.substr(6)));
+
+            var dat = convertJsonDateToDate(OrderList[i].Date);
+
+            var type;
+            if (OrderList[i].Type == true) {
+                type = "Buy";
+            }
+            else {
+                type = "Sell";
+            }
+            var Data = "<tr class='row_" + OrderList[i].ID + "'>" +
+                 "<td>" + OrderList[i].StockName + "</td>" +
+                 "<td>" + OrderList[i].StockPrice + "</td>" +
+                "<td>" + type + "</td>" +
+                "<td>" + OrderList[i].Quantity + "</td>" +
+                "<td>" + dat + "</td>" +
+                "<td>" + "<a href='#' class='btn btn-warning' onclick='EditOrderRecord(" + OrderList[i].ID + ")'>Edit <span class='glyphicon glyphicon-edit'></span></a>" + "</td>" +
+                "</tr>";
+            SetData.append(Data);
+            $("LoadingStatus").html(" ");
+
+        }
+
+    }
+    //Show The Popup Message for Add Order
+    function AddNewOrder(ID) {
+        $('#Type').prop('disabled', false);
+        $('#StockName').prop('disabled', false);
+        $("#form")[0].reset();
+        $("#ModalTitle").html("Add New Order");
+        $("#OurModal").modal();
+    }
+    //Show The Popup Message for Edit Order
+    function EditOrderRecord(ID) {
+        $('#Type').prop('disabled', true);
+        $('#StockName').prop('disabled', true);
+        var url = "/Order_Transaction/GetOrderById?ID=" + ID;
+        $("#ModalTitle").html("Edit Order");
+        $("#OurModal").modal();
+        $.ajax({
+            type: "Get",
+            url: url,
+            success: function (data) {
+                var obj = JSON.parse(data);
+                $("#ID").val(obj.ID);
+                if (obj.Type == true) {
+                    $('#Type').children().eq(0).prop('selected', true);
+                }
+                else {
+                    $('#Type').children().eq(1).prop('selected', true);
+                }
+                $("#Quantity").val(obj.Quantity);
+                $("#StockName option:selected").text(obj.Stock.EnglishName);
+
+               
+            }
+        })
+    }
+    $("#SaveOrderRecord").click(function () {
+        var quantityTextbox = document.getElementById("Quantity").value;
+        if (isNaN(quantityTextbox) || !(quantityTextbox) || quantityTextbox == 0) {
+            $("#checkNumbers").text("Quantity Field is reqired and accept only numbers more than zero");
+        }
+        else {
+            $('#Type').prop('disabled', false);
+            $('#StockName').prop('disabled', false);
+            var data = $("#SubmitForm").serialize();
+            $.ajax({
+                type: "post",
+                url: "/Order_Transaction/SaveDataInDatabase",
+                data: data,
+                success: function (result) {
+                    if (result == true) {
+
+                        swal({
+                            title: "Success",
+                            text: "Transaction completed",
+                            type: "success"
+                        },
+                          function () {
+                              $("#OurModal").modal("hide");
+                              window.location.href = "/Order_Transaction/Index";
+                          });
+                    }
+                    else if (result == false) {
+
+                        swal({
+                            title: "Failed",
+                            text: "Transaction failed!",
+                            type: "warning"
+                        },
+                          function () {
+                              $("#OurModal").modal("hide");
+                              window.location.href = "/Order_Transaction/Index";
+                          });
+                    }
+                    //$("#OurModal").modal("hide");
+                    //window.location.hfre = "/Order_Transaction/Index";
+                }
+            })
+        }
+    })
+
+    $("#ser").click(function () {
+        var ordrid = $("#OrdID").val();
+        $("#stkName").text('');
+        $("#stkPrice").text('');
+        $("#OType").text('');
+        $("#OQuantity").text('');
+        $("#ODate").text('');
+        if (ordrid != '') {
+            $("#SearchModal").modal();
+            var Surl = "/Order_Transaction/GetOrderById?ID=" + ordrid;
+            $.ajax({
+                type: "Get",
+                url: Surl,
+                success: function (d) {
+                    var obj2 = JSON.parse(d);
+                    var Otype;
+                    $("#ID").val(obj2.ID);
+                    if (obj2.Type == true) {
+                        Otype = "Buy";
+                    }
+                    else {
+                        Otype = "Sell";
+                    }
+                    $("#stkName").text(obj2.Stock.EnglishName);
+                    $("#stkPrice").text(obj2.Stock.Price);
+                    $("#OType").text(Otype);
+                    $("#OQuantity").text(obj2.Quantity);
+                    var dat2 = convertJsonDateToDate(obj2.Date);
+                    var date = new Date(obj2.Date);
+                    $("#ODate").text(date.getDate()  + '/' + (date.getMonth() + 1) + '/' + date.getFullYear());
+
+                }
+            })
+
+        }})
+
+</script>
+@*}*@

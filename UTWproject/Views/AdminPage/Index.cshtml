@@ -1,0 +1,93 @@
+﻿
+@{
+    Layout = "~/Views/Shared/DashboardLayout.cshtml";
+    DBentities db = new DBentities();
+    System.Linq.IQueryable<User> users = db.Users;
+
+    if (ViewBag.state == "Active")
+    {
+        users = db.Users.Where(x => x.State == "Active");
+    }
+    else if (ViewBag.state == "Blocked")
+    {
+        users = db.Users.Where(x => x.State == "Blocked");
+    }
+
+    if (ViewBag.name != "")
+    {
+        string name = ViewBag.name;
+        users = users.Where(x => x.UserName.Contains(name));
+    }
+
+    if (ViewBag.email != "")
+    {
+        string email = ViewBag.email;
+        users = users.Where(x => x.Email.Contains(email));
+    }
+
+    List<User> usersList = users.ToList();
+}
+<div class="container">
+    <div class="col-md-4">
+        @using (Html.BeginForm("Index", "AdminPage", FormMethod.Post))
+        {
+            <div class="form-group">
+                <select id="state" name="state" class="form-control">
+                    <option @{if (ViewBag.state == "All") { @Html.Raw("Selected")   ; }}>All</option>
+                    <option @{if (ViewBag.state == "Active") { @Html.Raw("Selected")   ; }}>Active</option>
+                    <option @{if (ViewBag.state == "Blocked") { @Html.Raw("Selected")   ; }}>Blocked</option>
+                </select>
+
+                <label>User Name</label>
+                <input class="form-control" type="text" name="name" id="name" value="@ViewBag.name" />
+
+                <label>Email</label>
+                <input class="form-control" type="text" name="email" id="email" value="@ViewBag.email" />
+
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-default" value="Filter" />
+            </div>
+    }
+    </div>
+</div>
+
+<div class="container">
+
+    <table class="table table-striped table-bordered table-hover">
+        <tr>
+            <th>English Name</th>
+            <th>Arabic Name</th>
+            <th>User Name</th>
+            <th>Email</th>
+            <th>Status</th>
+        </tr>
+        @foreach (User user in usersList)
+        {
+            if (!user.Admin)
+            {
+                <tr>
+                    <td>@user.EnglishName</td>
+                    <td>@user.ArabicName</td>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        @if (user.State == "Active")
+                        {
+                            <span>Active</span>
+                        }
+                        else
+                        {
+                            using (Html.BeginForm("Disblock", "AdminPage", new { id = user.ID }, FormMethod.Post))
+                            {
+                                <input type="submit" value="Blocked" class="btn btn-danger" />
+                            }
+                        }
+
+                    </td>
+                </tr>
+            }
+        }
+
+    </table>
+</div>

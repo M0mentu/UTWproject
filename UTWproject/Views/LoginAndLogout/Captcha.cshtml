@@ -1,0 +1,12 @@
+﻿@using CaptchaMvc.HtmlHelpers
+@{
+    ViewBag.Title = "Captcha";
+}
+@using (Html.BeginForm())
+{
+
+        @Html.ValidationSummary(true)
+        @Html.Captcha(6)
+        <p class="Error">  @ViewBag.ErrMessage </p>
+        <input type="submit" value="Send" class="btn btn-danger" />
+}

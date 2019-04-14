@@ -1,0 +1,266 @@
+﻿@model UTWproject.User
+
+@{
+    ViewBag.Title = "Register";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    DBentities DB = new DBentities();
+    var questions = DB.Questions.ToList();
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+}
+
+<style>
+    .erros {
+        float: left;
+        text-align: right;
+        padding-left: 20px;
+    }
+
+    .boxes {
+        float: left;
+        text-align: right;
+        width:250px;
+    }
+    .form-control {
+    border: 0;
+    box-shadow:none;
+   border-bottom:solid;
+   border-bottom-width:1px;
+    border-bottom-color:black;
+}
+
+ 
+
+</style>
+
+@if (ViewBag.Status != null && Convert.ToBoolean(ViewBag.Status))
+{
+    if (ViewBag.Message != null)
+    {
+        <div class="alert alert-success">
+            @ViewBag.Message
+        </div>
+    }
+}
+else
+{
+
+    using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="form-group">
+                @Html.LabelFor(model => model.EnglishName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+                        @Html.EditorFor(model => model.EnglishName, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                    <div class="erros">
+                        @Html.ValidationMessageFor(model => model.EnglishName, "", new { @class = "text-danger" })
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.ArabicName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+
+                        @Html.EditorFor(model => model.ArabicName, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+
+                    <div class="erros">
+
+                        @Html.ValidationMessageFor(model => model.ArabicName, "", new { @class = "text-danger" })
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+
+                        @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+
+                    <div class="erros">
+
+                        @Html.ValidationMessageFor(model => model.UserName, "", new { @class = "text-danger" })
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+                        @Html.EditorFor(model => model.Password, new { htmlAttributes = new { @class = "form-control", id = "passwordid", onkeyup = "pa()" } })
+                    </div>
+
+
+                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                    <div style="padding-left:40px">
+                        <div style="width:30%; margin-left:230px" class="progress">
+
+                            <div id="pasprog" class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+                                <span id="passStrength" style="color:black"></span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+
+                        @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+
+                    <div class="erros">
+
+                        @Html.ValidationMessageFor(model => model.Email, "", new { @class = "text-danger" })
+                    </div>
+
+                </div>
+            </div>
+
+
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.QuestionID, "Question ", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+
+                        @Html.DropDownListFor(model => model.QuestionID, new SelectList(questions, "ID", "QTextEnglish"), htmlAttributes: new { @class = "form-control" })
+                    </div>
+
+
+                    @Html.ValidationMessageFor(model => model.QuestionID, "", new { @class = "text-danger" })
+
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.QuestionAnswer, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4">
+                    <div class="boxes">
+
+                        @Html.EditorFor(model => model.QuestionAnswer, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+
+                    <div class="erros">
+
+                        @Html.ValidationMessageFor(model => model.QuestionAnswer, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+            </div>
+
+
+            @if (ViewBag.validate != null)
+            {
+                <div class="form-group">
+                    <div class="control-label col-md-4" style="color:red;">@ViewBag.validate</div>
+                </div>
+            }
+
+
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-4">
+                    <input type="submit" value="Sign Up" class="btn" style="width:250px;background-color:#2f2f2f;color:white"/>
+                </div>
+            </div>
+        </div>
+
+
+    }
+
+
+
+    @section scripts{
+
+        <script>
+
+            function pa() {
+                var color = "";
+                var progress = "";
+                var textt = "";
+
+
+
+
+                var progtext = document.getElementById("passStrength");
+                var passText = document.getElementById("passStrength");
+                var password = $("#passwordid").val();
+                var specialCharacters = "!£$%^&*_@@#~?";
+                var strScore = 0;
+
+                for (var i = 0; i < password.length; i++) {
+                    if (specialCharacters.indexOf(password.charAt(i) > -1)) {
+                        strScore += 6;
+                    }
+                }
+
+                if (/[a-z]/.test(password)) {
+                    strScore += 5;
+                }
+                if (/[A-Z]/.test(password)) {
+                    strScore += 5;
+                }
+                if (/[\d]/.test(password)) {
+                    strScore += 5;
+                }
+                if (password.length >= 10) {
+                    strScore += 5;
+                }
+                var strength = "";
+                var backcolor = "";
+                if (strScore >= 100) {
+                    textt = "Strong";
+                    progress = "100%";
+                    color = "progress-bar progress-bar-success";
+                }
+                else if (strScore >= 80) {
+                    textt = "Medium";
+                    progress = "80#";
+                    color = "progress-bar progress-bar-info";
+                }
+                else if (strScore >= 60) {
+                    textt = "Weak";
+                    progress = "60%";
+                    color = "progress-bar progress-bar-warning";
+
+                }
+                else {
+                    textt = "VeryWeak";
+                    progress = "30%";
+                    color = "progress-bar progress-bar-danger";
+                }
+                passText.innerHTML = textt;
+                $("#pasprog").removeClass();
+                $("#pasprog").addClass(color);
+                $("#pasprog").css('width', progress);
+
+            }
+
+
+
+        </script>
+    }
+
+}
+
